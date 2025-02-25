@@ -68,19 +68,45 @@ def dashboard():
     notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.timestamp.desc()).all()
     return render_template('dashboard.html', notes=notes)
 
+import requests
+
+def transcribe_with_deepgram(audio_file):
+    # Retrieve your Deepgram API key from configuration or environment variable
+    DEEPGRAM_API_KEY = app.config.get('DEEPGRAM_API_KEY')
+    headers = {
+        'Authorization': f'Token {DEEPGRAM_API_KEY}',
+        'Content-Type': 'application/octet-stream'
+    }
+    url = "https://api.deepgram.com/v1/listen"
+    
+    # Read the binary data from the audio file
+    audio_data = audio_file.read()
+    
+    response = requests.post(url, headers=headers, data=audio_data)
+    response_data = response.json()
+    
+    try:
+        transcript = response_data['results']['channels'][0]['alternatives'][0]['transcript']
+    except (KeyError, IndexError):
+        transcript = "Transcription failed. Please try again."
+    
+    return transcript
+
 @app.route('/transcribe', methods=['GET', 'POST'])
 @login_required
 def transcribe():
     form = TranscribeForm()
     if form.validate_on_submit():
-        # Simulate transcription (replace with real service if available)
-        simulated_transcription = "Simulated transcription for: " + form.audio_file.data.filename
-        new_note = Note(content=simulated_transcription, user_id=current_user.id, timestamp=datetime.utcnow())
+        # Call the Deepgram API instead of simulating transcription
+        transcript = transcribe_with_deepgram(form.audio_file.data)
+        
+        new_note = Note(content=transcript, user_id=current_user.id, timestamp=datetime.utcnow())
         db.session.add(new_note)
         db.session.commit()
         flash('Transcription completed and note saved!')
         return redirect(url_for('dashboard'))
     return render_template('transcribe.html', form=form)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
