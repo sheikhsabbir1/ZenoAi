@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Transcribe Audio</h2>
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.audio_file.label }}<br>
+        {{ form.audio_file() }}
+    </div>
+    <div>
+        {{ form.submit() }}
+    </div>
+</form>
+{% endblock %}

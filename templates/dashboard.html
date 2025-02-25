@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Welcome, {{ current_user.username }}!</p>
+<h3>Your Transcribed Notes</h3>
+{% if notes %}
+    <ul>
+    {% for note in notes %}
+        <li>{{ note.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} - {{ note.content }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No notes yet. Try uploading an audio file for transcription!</p>
+{% endif %}
+{% endblock %}
